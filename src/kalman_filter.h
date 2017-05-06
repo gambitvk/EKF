@@ -64,9 +64,14 @@ public:
    */
   void UpdateEKF(const Eigen::VectorXd &z);
 
+  void setX(const double &r,const double &p,const double &rr);
+  void setX(const double &x,const double &y);
+  float normalize(float y);
+
 private:
   Eigen::VectorXd getPolar();
   void updateCommon(Eigen::VectorXd &y);
+  
 };
 
 #endif /* KALMAN_FILTER_H_ */

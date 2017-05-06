@@ -1,4 +1,5 @@
 #include "kalman_filter.h"
+#include "iostream"
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -42,11 +43,24 @@ Eigen::VectorXd KalmanFilter::getPolar()
     float py = x_(1);
     float vx = x_(2);
     float vy = x_(3);
+    float c1 = px*px + py*py;
+    float c2 =  (px*vx + py*vy);
     Eigen::VectorXd  result(3);
-    result(0) = sqrt(px*px + py*py);
-    result(1) = atan2(py,px);
-    result(2) = (px*vx + py*vy) / result(0);
+    result(0) = sqrt(c1);
+    if(fabs(result(0) < 0.0001))
+    {
+        result(0) = 0.0001;
+    }
+        
+    result(1) = atan2(py,px) ;
+    result(2) =  (c2 / result(0));
+
     return result;
+}
+
+float KalmanFilter::normalize( float y)
+{
+    return atan2(sin(y),cos(y));
 }
 
 void KalmanFilter::updateCommon(Eigen::VectorXd &y)
@@ -70,5 +84,17 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
     * update the state by using Extended Kalman Filter equations
   */
     VectorXd y = z - getPolar();
+    y(1) = normalize(y(1));
     updateCommon(y);
+}
+
+void KalmanFilter::setX(const double &r,const  double &p ,const  double &rr)
+{
+    x_ << r*cos(p), r* sin(p) , rr * cos(p) , rr * sin(p);
+}
+
+
+void KalmanFilter::setX(const double &x,const  double &y)
+{
+    x_ << x,y,0.0,0.0;
 }

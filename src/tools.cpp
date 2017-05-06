@@ -43,22 +43,22 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state)
     float vx = x_state(2);
     float vy = x_state(3);
 
+    //pre-compute a set of terms to avoid repeated calculation
+    float c1 = px*px+py*py;
+    float c2 = sqrt(c1);
+    float c3 = (c1*c2);
+
     //check division by zero
-
-    if(px*py*vx*vy == 0)
-    {
-        std::cout << "CalculateJacobian () - Error - Division by Zero" << std::endl; 
+    if(fabs(c1) < 0.0001){
+        std::cout << "CalculateJacobian () - Error - Division by Zero" << std::endl;
         return Hj;
+        //c1 = 0.0001;
     }
+
     //compute the Jacobian matrix
-    Hj(2,2) = Hj(0,0) = px / sqrt(cal1(px,py));
-    Hj(2,3) = Hj(0,1) = py / sqrt(cal1(px,py));
-
-    Hj(1,0) = -py / cal1(px,py);
-    Hj(1,1) = px / cal1(px,py);
-
-    Hj(2,0) = cal2(py,px,vx,vy) / pow(cal1(px,py),3/2);
-    Hj(2,1) = cal2(px,py,vy,vx) / pow(cal1(px,py),3/2);
+    Hj << (px/c2), (py/c2), 0, 0,
+       -(py/c1), (px/c1), 0, 0,
+       py*(vx*py - vy*px)/c3, px*(px*vy - py*vx)/c3, px/c2, py/c2;
 
     return Hj;
 }
